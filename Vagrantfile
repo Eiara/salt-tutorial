@@ -14,6 +14,12 @@ Vagrant.configure(2) do |config|
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "ubuntu/trusty64"
 
+  machines = []
+(1..2).each { |id|
+  machines << "test#{id}"
+}
+  
+
   config.vm.provision "shell", inline: <<eos
 if ! [ -e /etc/apt/sources.list.d/saltstack-salt-trusty.list ]; then
   sudo add-apt-repository ppa:saltstack/salt
@@ -22,7 +28,6 @@ sudo apt-get update
 if ! dpkg -i language-pack-en > /dev/null 2>&1 ; then
   sudo apt-get install language-pack-en -y
 fi
-  
 eos
   ip_base = "192.168.10"
   master_ip = "#{ip_base}.2"
@@ -40,6 +45,12 @@ fi
 if ! [ -e /etc/salt/pki/master/minions ]; then
   mkdir -p /etc/salt/pki/master/minions
 fi
+pushd /vagrant/keys
+for machine in #{ machines.join(" ") }; do
+  if ! [ -e $machine.pub ]; then
+    salt-key --gen-keys=$machine --gen-keys-dir .
+  fi
+done
 cp /vagrant/keys/*.pub /etc/salt/pki/master/minions
 pushd /etc/salt/pki/master/minions
 for file in *.pub; do
@@ -50,19 +61,23 @@ popd
 eos
   end
 
-  (1..2).each do |i|
-    config.vm.define "test#{i}" do |minion|
-      minion.vm.hostname = "test#{i}"
+  machines.each.with_index do |machine, i|
+    config.vm.define machine do |minion|
+      minion.vm.hostname = machine
       minion.vm.network "private_network", ip: "#{ip_base}.1#{i}"
       minion.vm.provision "shell", inline: <<eos
-if ! [ -e /etc/salt/pki/minion/ ]; then
+echo "Machine name is #{machine}"
+if ! [ -e "/etc/salt/pki/minion/#{machine}.pem" ]; then
+  echo "No keys on machine"
   mkdir -p /etc/salt/pki/minion/
-  cp /vagrant/keys/test#{i}.* /etc/salt/pki/minion/
+  cp /vagrant/keys/#{machine}.* /etc/salt/pki/minion/
   pushd /etc/salt/pki/minion/
-  for fn in test#{i}.*; do
+  for fn in #{machine}.*; do
+    echo "${fn}"
     ext=`echo $fn | cut -d"." -f2`
     mv $fn minion.$ext
   done
+  popd
 fi
 if ! dpkg -i salt-master > /dev/null 2>&1 ; then
   sudo apt-get install -y salt-minion

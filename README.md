@@ -1,7 +1,8 @@
 # Salt Vagrant Env
 
 This is a very basic Salt master + two Salt minions that connect to it.
-Keys are not yet automatically generated or provisioned, so salt-key will need to be run
-on the master system.
 
-Uses the `ubuntu/trusty` base box, for consistency and sensibility
+Pre-seeded keys for the minions are automatically generated during controller bootup, and accepted by the master during initialistion.
+Since these are dev keys, obviously don't use them for anything.
+
+Uses the `ubuntu/trusty` base box, for consistency and sensibility.
