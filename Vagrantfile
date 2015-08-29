@@ -37,6 +37,16 @@ if [ "$(cat /etc/salt/master | md5sum -)" != "$(cat /vagrant/config/master)" ]; 
   cp /vagrant/config/master /etc/salt/master
   service salt-master restart
 fi
+if ! [ -e /etc/salt/pki/master/minions ]; then
+  mkdir -p /etc/salt/pki/master/minions
+fi
+cp /vagrant/keys/*.pub /etc/salt/pki/master/minions
+pushd /etc/salt/pki/master/minions
+for file in *.pub; do
+  fn=`echo ${file} | sed s/\.pub//`
+  mv $file $fn
+done
+popd
 eos
   end
 
@@ -45,6 +55,15 @@ eos
       minion.vm.hostname = "test#{i}"
       minion.vm.network "private_network", ip: "#{ip_base}.1#{i}"
       minion.vm.provision "shell", inline: <<eos
+if ! [ -e /etc/salt/pki/minion/ ]; then
+  mkdir -p /etc/salt/pki/minion/
+  cp /vagrant/keys/test#{i}.* /etc/salt/pki/minion/
+  pushd /etc/salt/pki/minion/
+  for fn in test#{i}.*; do
+    ext=`echo $fn | cut -d"." -f2`
+    mv $fn minion.$ext
+  done
+fi
 if ! dpkg -i salt-master > /dev/null 2>&1 ; then
   sudo apt-get install -y salt-minion
 fi
