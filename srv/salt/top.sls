@@ -1,3 +1,3 @@
-# base:
-#     "test*":
-#         -
+base:
+    "test1":
+        - motd
