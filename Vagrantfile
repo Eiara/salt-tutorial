@@ -23,7 +23,7 @@ Vagrant.configure(2) do |config|
   master_ip = "#{ip_base}.2"
 
   config.vm.define "controller" do |cont|
-    cont.vm.box = "https://s3-ap-southeast-2.amazonaws.com/salt-tutorial/controller.box"
+    cont.vm.box = "controller"
 
     cont.vm.hostname = "salt-controller"
     cont.vm.network "private_network", ip: master_ip
@@ -31,7 +31,7 @@ Vagrant.configure(2) do |config|
 
   machines.each.with_index do |machine, i|
     config.vm.define machine do |minion|
-      minion.vm.box = "https://s3-ap-southeast-2.amazonaws.com/salt-tutorial/test-#{i+1}.box"
+      minion.vm.box = "test#{i+1}"
       minion.vm.hostname = machine
       minion.vm.network "private_network", ip: "#{ip_base}.1#{i}"
     end
