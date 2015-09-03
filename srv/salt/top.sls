@@ -1,3 +1,5 @@
 base:
     "test1":
-        - nginx
+      - nginx
+    "test2":
+      - webapp
