@@ -1,3 +1,8 @@
 base:
     "test1":
-        - motd
+      - nginx
+    #   - nginx_config
+    "test2":
+      - webapp # worlds simplest
+      - packages # git, etc
+    #   - initscript # as it says
