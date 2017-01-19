@@ -6,8 +6,11 @@ nginx:
 /etc/nginx/conf.d/webapp.conf:
   file.managed:
     - source: salt://files/nginx.conf
+    - template: jinja
     - requires:
       - pkg: nginx
+    - context:
+        port: {{ salt.pillar.get("webapp:port") }}
 
 # Restarts nginx when the config file is changed
 
